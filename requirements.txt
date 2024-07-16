@@ -1,5 +1,6 @@
-streamlit
-opencv-python-headless
-numpy
-deepface
-langchain
+streamlit==0.89.0
+opencv-python-headless==4.5.3.56
+numpy==1.21.1
+deepface==0.0.68
+tensorflow==2.7.0
+langchain==0.0.2
