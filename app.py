@@ -1,20 +1,35 @@
 import streamlit as st
-from transformers import pipeline
 import os
+import cv2
+import numpy as np
+from deepface import DeepFace
 from langchain.llms import OpenAI
 
-# Initialize emotion detection pipeline
-emotion_detector = pipeline('sentiment-analysis', model='bhadresh-savani/distilbert-base-uncased-emotion')
+def emotion_detector(image_file):
+    file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
+    image = cv2.imdecode(file_bytes, 1)
+    st.image(image, channels="BGR")
+
+    # Save the uploaded image to a temporary file
+    temp_file = "temp_image.jpg"
+    cv2.imwrite(temp_file, image)
+
+    # Analyze the image using DeepFace
+    result = DeepFace.analyze(img_path=temp_file, actions=['emotion'])
+    emotion = result[0]['dominant_emotion']
+
+    return emotion
 
 # Function to get opposite emotion
 def get_opposite_emotion(emotion):
     opposite_emotions = {
-        'anger': 'calm',
-        'joy': 'sadness',
-        'sadness': 'joy',
-        'fear': 'trust',
+        'angry': 'calm',
+        'happy': 'sad',
+        'sad': 'happy',
+        'fear': 'confident',
         'disgust': 'admiration',
-        'surprise': 'anticipation'
+        'surprise': 'boredom',
+        'neutral': 'emotional'
     }
     return opposite_emotions.get(emotion, 'neutral')
 
@@ -37,14 +52,13 @@ def main():
         return
     
     user_name = st.text_input("Enter your name:")
-    user_input = None
-    
-    if user_name:
-        user_input = st.text_input(f"{user_name}, How are you feeling today?")
-    
-    if user_input:
-        emotions = emotion_detector(user_input)
-        primary_emotion = emotions[0]['label']
+
+    st.write('Upload the image of your face, and the app will detect your emotion:')
+
+    image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+    if user_name and image_file:
+        primary_emotion = emotion_detector(image_file)
         opposite_emotion = get_opposite_emotion(primary_emotion)
         
         st.write(f"Detected Emotion: {primary_emotion}")
