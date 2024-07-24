@@ -1,30 +1,28 @@
 import streamlit as st
 import cv2
 import numpy as np
-from deepface import DeepFace
+from fer import FER
 import google.generativeai as genai
-import os
 
 def emotion_detector(image_file):
     file_bytes = np.asarray(bytearray(image_file.read()), dtype=np.uint8)
     image = cv2.imdecode(file_bytes, 1)
     st.image(image, channels="BGR")
 
-    # Save the uploaded image to a temporary file
-    temp_file = "temp_image.jpg"
-    cv2.imwrite(temp_file, image)
+    # Convert image to RGB
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    # Analyze the image using DeepFace
-    try:
-        result = DeepFace.analyze(img_path=temp_file, actions=['emotion'])
-        emotion = result[0]['dominant_emotion']
-    except Exception as e:
-        st.error(f"Error analyzing the image: {e}")
-        emotion = None
+    # Initialize the FER emotion detector
+    detector = FER()
 
-    # Cleanup
-    if os.path.exists(temp_file):
-        os.remove(temp_file)
+    # Detect emotions in the image
+    emotions = detector.detect_emotions(rgb_image)
+
+    if emotions:
+        # Get the dominant emotion
+        emotion, score = detector.top_emotion(rgb_image)
+    else:
+        emotion = 'No face detected'
 
     return emotion
 
@@ -37,15 +35,19 @@ def get_opposite_emotion(emotion):
         'fear': 'confident',
         'disgust': 'admiration',
         'surprise': 'boredom',
-        'neutral': 'emotional'
+        'neutral': 'emotional',
+        'contempt': 'respectful',
+        'confused': 'clear-minded',
+        'embarrassed': 'proud',
+        'No face detected': 'Please provide a clear face image'
     }
     return opposite_emotions.get(emotion, 'neutral')
 
-# Function to generate story using OpenAI's GPT-3.5-turbo engine
-def generate_story(opposite_emotion, api_key, user_name):
+# Function to generate a story based on the opposite emotion
+def generate_story(opposite_emotion, api_key, user_name, max_no_of_words):
     try:
         genai.configure(api_key=api_key)
-        prompt = f"Write a story that evokes {opposite_emotion} in which the main character's name is {user_name}."
+        prompt = f"Write a simple story that evokes {opposite_emotion} in which the main character's name is {user_name}. The maximum number of words should be {max_no_of_words}."
         model = genai.GenerativeModel('gemini-1.0-pro-latest')
         response = model.generate_content(prompt)
         story = response.text
@@ -60,34 +62,29 @@ def main():
     st.title("Emotion-Based Story Generator")
 
     api_key = st.text_input("Enter your Gemini API key", type="password")
-    
-    if not api_key:
-        st.warning("Please enter your Gemini API key.")
-        return
-    
     user_name = st.text_input("Enter your name:")
 
     if user_name:
         st.write('Upload the image of your face, and the app will detect your emotion:')
-        
-        image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+        image_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png", "bmp", "tiff", "webp"])
 
         if image_file is not None:
             primary_emotion = emotion_detector(image_file)
-            
-            if primary_emotion:
-                opposite_emotion = get_opposite_emotion(primary_emotion)
-                st.write(f"Detected Emotion: {primary_emotion}")
-                st.write(f"Opposite Emotion: {opposite_emotion}")
-                
-                story = generate_story(opposite_emotion, api_key, user_name)
-                if story:
+            opposite_emotion = get_opposite_emotion(primary_emotion)
+
+            st.write(f"Detected Emotion: {primary_emotion}")
+            st.write(f"Opposite Emotion: {opposite_emotion}")
+
+            max_no_of_words = st.text_input("Enter the maximum number of words for the story.")
+
+            if st.button('Generate Story'):
+                if max_no_of_words.isdigit():
+                    story = generate_story(opposite_emotion, api_key, user_name, max_no_of_words)
                     st.write("Here's a story for you:")
                     st.write(story)
                 else:
-                    st.error("Could not generate a story.")
-            else:
-                st.error("Could not detect an emotion.")
+                    st.error("Please enter a valid number for the maximum number of words.")
 
 if __name__ == "__main__":
     main()
