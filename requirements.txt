@@ -3,3 +3,4 @@ opencv-python-headless
 numpy
 fer
 google-generativeai
+tensorflow
