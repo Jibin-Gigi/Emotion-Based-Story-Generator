@@ -1,81 +1,55 @@
-# Emotion-Based Story Generator
+# Emotion-to-Character Roleplay Chatbot
 
-This Streamlit application is designed to detect the user's emotion from an uploaded image and generate a story based on the opposite emotion using Google's Generative AI API (Gemini). It's a fun way to turn your frown upside down or explore the other side of your current mood!
+This Streamlit app uses Google's Gemini models to create a unique and interactive chat experience. It captures a user's image, infers their emotion and gender, and then generates a chatbot with a persona of the opposite emotion and gender. The user can then engage in a real-time conversation with this AI-driven character.
 
 ## Features
 
-- **Emotion Detection**: Upload an image, and the app uses the FER (Facial Emotion Recognition) library to detect your emotion. It's like a mood mirror!
-- **Opposite Emotion**: The app identifies the opposite emotion to the detected one—because sometimes it's good to see things from a different perspective.
-- **Story Generation**: Based on the opposite emotion, the app crafts a unique story just for you, with a customizable maximum word count. Perfect for a quick read!
-- **User Input**: You can input your name, and the app makes you the star of the story. It also requires your API key for generating the story.
+  * **Image-based Analysis:** Uses the Gemini Vision model to analyze a user's photo and detect their dominant emotion and gender.
+  * **Dynamic Character Creation:** Generates a new chatbot character with a specific backstory, profession, and personality based on the analysis of the user's photo. The character's persona is the opposite of the user's detected emotion and gender.
+  * **Engaging Roleplay:** The chatbot is instructed to roleplay as the created character, adhering to specific rules for conversational style and behavior to provide a realistic chat experience.
+  * **Secure API Handling:** Uses environment variables (`.env` file) to securely manage the Gemini API key.
+  * **Privacy Notice:** The application provides a clear privacy warning, informing users that their image and chat data are sent to the Gemini API for processing and are not stored locally.
 
-## Requirements
+## How It Works
 
-- Python 3.x
-- streamlit
-- opencv-python
-- numpy
-- fer
-- google.generativeai
+1.  **Capture Image:** The user takes a selfie using the built-in camera input.
+2.  **Analysis:** The image is sent to the Gemini Vision API, which returns a JSON object containing the detected emotion and gender.
+3.  **Character Generation:** The application uses these detections to create a prompt for the Gemini text model. This prompt instructs the model to generate a character with the opposite emotion and gender. The model creates a three-sentence character profile and a detailed set of instructions for the chatbot's persona.
+4.  **Chat:** The user chats with the newly created character. The chatbot uses the provided persona instructions and conversation history to generate in-character responses.
 
-## Installation
+## Installation and Setup
 
-1. **Clone the repository:**
+1.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/Jibin-Gigi/Emotion-Based-Story-Generator/
+    cd Emotion-Based-Story-Generator
+    ```
+2.  **Create a Virtual Environment (Optional but recommended):**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate   # On Windows: venv\Scripts\activate
+    ```
+3.  **Install Dependencies:**
+    The required packages are listed in `requirements.txt`.
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  **Set Up API Key:**
+      * Get a Gemini API key from [Google AI Studio](https://aistudio.google.com/).
+      * Create a file named `.env` in the root directory of the project.
+      * Add your API key to the file in the following format:
+        ```
+        GEMINI_API_KEY="your_api_key_here"
+        ```
+5.  **Run the Application:**
+    ```bash
+    streamlit run app.py
+    ```
 
-   ```bash
-   git clone https://github.com/Jibin-Gigi/Emotion-Based-Story-Generator.git
-   ```
+The application will open in your default web browser.
 
-2. **Navigate to the project directory:**
+## Code Structure
 
-   ```bash
-   cd Emotion-Based-Story-Generator
-   ```
-
-3. **Install the required packages:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-1. **Run the Streamlit app:**
-
-   ```bash
-   streamlit run app.py
-   ```
-
-2. **Open your browser** and navigate to the URL provided by Streamlit (typically http://localhost:8501).
-
-3. **Enter your Gemini API key** in the provided input field.
-
-4. **Enter your name** in the provided input field.
-
-5. **Upload an image** of your face. A smile is optional, but clarity is important!
-
-6. **Enter the maximum number of words** for the generated story. Keep it short and sweet or go for something epic—it's up to you!
-
-7. **Click "Generate Story"** to receive a story inspired by the opposite of your detected emotion.
-
-## Important Notes
-
-- Make sure your face is clearly visible in the uploaded image for accurate emotion detection. The app isn't great with blurry selfies!
-- The `google.generativeai` package requires a valid API key from Google Generative AI (Gemini).
-- The FER library is good, but it's not perfect. Sometimes emotions can be a bit tricky to pin down.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgements
-
-- [Streamlit](https://www.streamlit.io/) for the user-friendly interface.
-- [FER](https://github.com/justinshenk/fer) for the emotion detection.
-- [OpenCV](https://opencv.org/) for image processing.
-- [NumPy](https://numpy.org/) for making math a bit more approachable.
-- [Google Generative AI](https://cloud.google.com/gen-ai/) for the creative story generation.
-
-## Contributing
-
-Got a fun idea or a clever tweak? Feel free to fork this project and make it even better. Pull requests are always welcome!
+  * `app.py`: The main Streamlit application file, containing all the logic for the UI, API calls, and character generation.
+  * `.env`: A hidden file for storing the API key securely.
+  * `requirements.txt`: A list of all Python libraries needed to run the application.
