@@ -1,6 +1,5 @@
 streamlit
-opencv-python-headless
 numpy
-fer
+Pillow
 google-generativeai
-tensorflow
+python-dotenv
